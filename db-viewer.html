@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DB Viewer — Interview Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1d27;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a2d3a;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header h1 span {
+      background: #3b82f6;
+      color: white;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .refresh-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .refresh-btn:hover { background: #2563eb; }
+    .refresh-btn:disabled { background: #555; cursor: not-allowed; }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .summary-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .summary-card {
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 12px;
+      padding: 16px 24px;
+      min-width: 160px;
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .summary-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .table-section {
+      margin-bottom: 40px;
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a2d3a;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .table-header:hover { background: #21253a; }
+
+    .table-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .table-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .row-badge {
+      background: #1e3a5f;
+      color: #60a5fa;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .col-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .col-badge {
+      background: #1e2a1e;
+      color: #4ade80;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    .col-badge.nullable {
+      background: #2a2520;
+      color: #fb923c;
+    }
+
+    .toggle-icon {
+      color: #888;
+      font-size: 18px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-icon.open { transform: rotate(180deg); }
+
+    .table-body { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead tr {
+      background: #12151f;
+    }
+
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      color: #888;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #2a2d3a;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #1e2130;
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover { background: #1e2235; }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 10px 16px;
+      color: #ccc;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .null-val {
+      color: #555;
+      font-style: italic;
+      font-family: sans-serif;
+    }
+
+    .status-pill {
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: sans-serif;
+      text-transform: capitalize;
+    }
+
+    .status-phone       { background:#1e3a5f; color:#60a5fa; }
+    .status-screening   { background:#2d1f5e; color:#a78bfa; }
+    .status-interview   { background:#1a3a2a; color:#4ade80; }
+    .status-rejected    { background:#3a1a1a; color:#f87171; }
+    .status-ghosted     { background:#2a2a2a; color:#888; }
+    .status-uninteresting{ background:#2a2510; color:#fbbf24; }
+
+    .empty-rows {
+      padding: 32px;
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 80px;
+      color: #555;
+      font-size: 16px;
+    }
+
+    .error-msg {
+      background: #3a1a1a;
+      color: #f87171;
+      padding: 16px 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .collapsed .table-body { display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🗄️ DB Viewer <span>interview_tracker</span></h1>
+  <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button>
+</header>
+
+<div class="container">
+  <div id="summary" class="summary-bar"></div>
+  <div id="content" class="loading">Loading database...</div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api/db-viewer';
+
+  async function loadData() {
+    const content = document.getElementById('content');
+    const summary = document.getElementById('summary');
+    const btn = document.querySelector('.refresh-btn');
+
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+    content.innerHTML = '<div class="loading">Fetching data...</div>';
+    summary.innerHTML = '';
+
+    try {
+      const res = await fetch(API);
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      const tables = await res.json();
+
+      // Summary bar
+      const totalRows = tables.reduce((a, t) => a + parseInt(t.row_count), 0);
+      summary.innerHTML = `
+        <div class="summary-card">
+          <div class="label">Tables</div>
+          <div class="value">${tables.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Total Rows</div>
+          <div class="value">${totalRows}</div>
+        </div>
+        ${tables.map(t => `
+          <div class="summary-card">
+            <div class="label">${t.table_name}</div>
+            <div class="value">${t.row_count}</div>
+          </div>
+        `).join('')}
+      `;
+
+      // Tables
+      content.innerHTML = tables.map((t, i) => buildTable(t, i)).join('');
+
+    } catch (err) {
+      content.innerHTML = `
+        <div class="error-msg">
+          ❌ ${err.message} — is your NestJS server running on port 3000?
+        </div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⟳ Refresh';
+    }
+  }
+
+  function buildTable(t, i) {
+    const cols = t.columns;
+    const rows = t.rows;
+
+    const colBadges = cols.map(c => `
+      <span class="col-badge ${c.is_nullable === 'YES' ? 'nullable' : ''}">
+        ${c.column_name}
+      </span>
+    `).join('');
+
+    const thead = cols.map(c => `<th>${c.column_name}</th>`).join('');
+
+    const tbody = rows.length === 0
+      ? `<tr><td colspan="${cols.length}" class="empty-rows">No rows yet</td></tr>`
+      : rows.map(row => `
+          <tr>
+            ${cols.map(c => {
+              const val = row[c.column_name];
+              if (val === null || val === undefined) {
+                return `<td><span class="null-val">null</span></td>`;
+              }
+              if (c.column_name === 'status') {
+                return `<td>
+                  <span class="status-pill status-${val}">${val}</span>
+                </td>`;
+              }
+              if (c.column_name === 'password') {
+                return `<td><span class="null-val">[hashed]</span></td>`;
+              }
+              return `<td title="${val}">${val}</td>`;
+            }).join('')}
+          </tr>
+        `).join('');
+
+    return `
+      <div class="table-section" id="section-${i}">
+        <div class="table-header" onclick="toggleTable(${i})">
+          <div class="table-header-left">
+            <span class="table-name">📋 ${t.table_name}</span>
+            <span class="row-badge">${t.row_count} rows</span>
+            <div class="col-badges">${colBadges}</div>
+          </div>
+          <span class="toggle-icon open" id="icon-${i}">▼</span>
+        </div>
+        <div class="table-body">
+          <table>
+            <thead><tr>${thead}</tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleTable(i) {
+    const section = document.getElementById(`section-${i}`);
+    const icon = document.getElementById(`icon-${i}`);
+    section.classList.toggle('collapsed');
+    icon.classList.toggle('open');
+  }
+
+  // Load on start
+  loadData();
+</script>
+</body>
+</html>
