@@ -13,7 +13,7 @@ async function bootstrap() {
     }),
   );
   (await app).enableCors({
-    origin: ['http://localhost:5173', 'null'], // ← 'null' = file:// origin
+    origin: [process.env.FRONTEND_URL], // ← 'null' = file:// origin
     credentials: true,
   });
   (await app).listen(process.env.PORT ?? 3000);
