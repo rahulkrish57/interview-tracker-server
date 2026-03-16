@@ -5,7 +5,7 @@ import {
   IsEnum,
   IsDateString,
 } from 'class-validator';
-import { ModeOfWork, InterviewStatus } from "../interviews.entity";
+import { ModeOfWork, InterviewStatus } from '../interviews.entity';
 
 export class CreateInterviewDto {
   @IsString()

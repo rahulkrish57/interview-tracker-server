@@ -3,19 +3,22 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-  (await app).useGlobalPipes(
+  app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // strips fields not in DTO
-      forbidNonWhitelisted: true, // throws error for unknown fields
-      transform: true, // auto-converts types
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
-  (await app).enableCors({
-    origin: [process.env.FRONTEND_URL], // ← 'null' = file:// origin
+
+  app.enableCors({
+    origin: [process.env.FRONTEND_URL],
     credentials: true,
   });
-  (await app).listen(process.env.PORT ?? 3000);
+
+  await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+
+void bootstrap();

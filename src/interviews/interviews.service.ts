@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Interview } from "./interviews.entity";
+import { Interview } from './interviews.entity';
 import { CreateInterviewDto } from './dto/create-interview.dto';
 import { UpdateInterviewDto } from './dto/update-interview.dto';
 

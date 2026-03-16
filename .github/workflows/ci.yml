@@ -1,0 +1,29 @@
+name: NestJS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.3.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint check
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
