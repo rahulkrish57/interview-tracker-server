@@ -25,5 +25,8 @@ jobs:
       - name: Lint check
         run: npm run lint
 
+      - name: Run tests
+        run: npx jest --no-coverage
+
       - name: Build project
         run: npm run build
