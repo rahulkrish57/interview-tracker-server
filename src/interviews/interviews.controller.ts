@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { InterviewsService } from './interviews.service';
+import { HistoryService } from '../history/history.service';
 import { CreateInterviewDto } from './dto/create-interview.dto';
 import { UpdateInterviewDto } from './dto/update-interview.dto';
 interface AuthenticatedRequest extends Request {
@@ -23,7 +24,10 @@ interface AuthenticatedRequest extends Request {
 @UseGuards(JwtAuthGuard)
 @Controller('api/interviews')
 export class InterviewsController {
-  constructor(private readonly interviewsService: InterviewsService) {}
+  constructor(
+    private readonly interviewsService: InterviewsService,
+    private readonly historyService: HistoryService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateInterviewDto, @Req() req: AuthenticatedRequest) {
@@ -52,5 +56,10 @@ export class InterviewsController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.interviewsService.remove(id, req.user.userId);
+  }
+
+  @Get(':id/history')
+  getHistory(@Param('id') id: string) {
+    return this.historyService.getHistory(id);
   }
 }
