@@ -25,16 +25,16 @@ export class CommentsService {
     interviewId: string,
     userId: string,
     content: string,
+    contentHtml: string,
   ): Promise<Comment> {
-    // Save comment
     const comment = this.commentRepo.create({
       interview_id: interviewId,
       user_id: userId,
       content,
+      content_html: contentHtml,
     });
     const saved = await this.commentRepo.save(comment);
 
-    // Save history entry
     const history = this.historyRepo.create({
       interview_id: interviewId,
       type: HistoryType.COMMENT_ADDED,

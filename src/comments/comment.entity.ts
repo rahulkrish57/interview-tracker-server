@@ -17,6 +17,9 @@ export class Comment {
   @Column({ type: 'text' })
   content: string;
 
+  @Column({ type: 'text', nullable: true })
+  content_html: string;
+
   @ManyToOne(() => Interview, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'interview_id' })
   interview: Interview;

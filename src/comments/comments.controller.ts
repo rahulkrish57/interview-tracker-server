@@ -33,12 +33,14 @@ export class CommentsController {
   addComment(
     @Param('interviewId') interviewId: string,
     @Body('content') content: string,
+    @Body('content_html') contentHtml: string,
     @Req() req: AuthRequest,
   ) {
     return this.commentsService.addComment(
       interviewId,
       req.user.userId,
       content,
+      contentHtml,
     );
   }
 
