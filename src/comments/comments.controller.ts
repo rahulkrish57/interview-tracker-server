@@ -10,6 +10,14 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CommentsService } from './comments.service';
+import { Request } from 'express';
+
+interface AuthRequest extends Request {
+  user: {
+    userId: string;
+    email: string;
+  };
+}
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/interviews/:interviewId/comments')
@@ -25,7 +33,7 @@ export class CommentsController {
   addComment(
     @Param('interviewId') interviewId: string,
     @Body('content') content: string,
-    @Req() req,
+    @Req() req: AuthRequest,
   ) {
     return this.commentsService.addComment(
       interviewId,
@@ -35,7 +43,10 @@ export class CommentsController {
   }
 
   @Delete(':commentId')
-  deleteComment(@Param('commentId') commentId: string, @Req() req) {
+  deleteComment(
+    @Param('commentId') commentId: string,
+    @Req() req: AuthRequest,
+  ) {
     return this.commentsService.deleteComment(commentId, req.user.userId);
   }
 }

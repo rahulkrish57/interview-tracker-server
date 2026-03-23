@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Interview } from "../interviews/interviews.entity";
+import { Interview } from '../interviews/interviews.entity';
 import { User } from '../auth/user.entity';
 
 @Entity('interview_comments')

@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { InterviewsService } from './interviews.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Interview } from './interviews.entity';
+import { HistoryService } from '../history/history.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { CreateInterviewDto } from './dto/create-interview.dto';
 
 const mockRepository = {
   create: jest.fn(),
@@ -10,6 +12,11 @@ const mockRepository = {
   find: jest.fn(),
   findOne: jest.fn(),
   remove: jest.fn(),
+};
+
+const mockHistoryService = {
+  logCreated: jest.fn().mockResolvedValue({}),
+  logStatusChange: jest.fn().mockResolvedValue({}),
 };
 
 describe('InterviewsService', () => {
@@ -22,6 +29,10 @@ describe('InterviewsService', () => {
         {
           provide: getRepositoryToken(Interview),
           useValue: mockRepository,
+        },
+        {
+          provide: HistoryService,
+          useValue: mockHistoryService,
         },
       ],
     }).compile();
@@ -57,10 +68,15 @@ describe('InterviewsService', () => {
       });
     });
   });
+
   describe('findOne', () => {
     it('should return an interview if found and user matches', async () => {
       // Arrange
-      const mockInterview = { id: '1', company: 'Google', user_id: 'user-123' };
+      const mockInterview = {
+        id: '1',
+        company: 'Google',
+        user_id: 'user-123',
+      };
       mockRepository.findOne.mockResolvedValue(mockInterview);
 
       // Act
@@ -71,7 +87,7 @@ describe('InterviewsService', () => {
     });
 
     it('should throw NotFoundException if interview not found', async () => {
-      // Arrange — simulate DB returning nothing
+      // Arrange
       mockRepository.findOne.mockResolvedValue(null);
 
       // Act + Assert
@@ -81,7 +97,7 @@ describe('InterviewsService', () => {
     });
 
     it('should throw ForbiddenException if user does not own interview', async () => {
-      // Arrange — interview belongs to different user
+      // Arrange
       const mockInterview = {
         id: '1',
         company: 'Google',
@@ -95,17 +111,24 @@ describe('InterviewsService', () => {
       );
     });
   });
+
   describe('create', () => {
     it('should create and return an interview', async () => {
       // Arrange
-      const dto = { company: 'Google', role: 'SDE', status: 'Applied' };
+      const dto: CreateInterviewDto = {
+        company: 'Google',
+        location: 'Bengaluru',
+        mode_of_work: 'onsite' as any,
+        status: 'phone' as any,
+        applied_date: '2026-01-01',
+      };
       const mockInterview = { id: '1', ...dto, user_id: 'user-123' };
 
       mockRepository.create.mockReturnValue(mockInterview);
       mockRepository.save.mockResolvedValue(mockInterview);
 
       // Act
-      const result = await service.create(dto as any, 'user-123');
+      const result = await service.create(dto, 'user-123');
 
       // Assert
       expect(result).toEqual(mockInterview);
@@ -114,13 +137,21 @@ describe('InterviewsService', () => {
         user_id: 'user-123',
       });
       expect(mockRepository.save).toHaveBeenCalledWith(mockInterview);
+      expect(mockHistoryService.logCreated).toHaveBeenCalledWith(
+        mockInterview.id,
+        mockInterview.company,
+      );
     });
   });
 
   describe('remove', () => {
     it('should remove an interview and return a message', async () => {
       // Arrange
-      const mockInterview = { id: '1', company: 'Google', user_id: 'user-123' };
+      const mockInterview = {
+        id: '1',
+        company: 'Google',
+        user_id: 'user-123',
+      };
       mockRepository.findOne.mockResolvedValue(mockInterview);
       mockRepository.remove.mockResolvedValue(mockInterview);
 
