@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InterviewsService } from './interviews.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Interview } from './interviews.entity';
+import { Interview, ModeOfWork, InterviewStatus } from './interviews.entity';
 import { HistoryService } from '../history/history.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateInterviewDto } from './dto/create-interview.dto';
@@ -118,8 +118,8 @@ describe('InterviewsService', () => {
       const dto: CreateInterviewDto = {
         company: 'Google',
         location: 'Bengaluru',
-        mode_of_work: 'onsite' as any,
-        status: 'phone' as any,
+        mode_of_work: ModeOfWork.ONSITE,
+        status: InterviewStatus.PHONE,
         applied_date: '2026-01-01',
       };
       const mockInterview = { id: '1', ...dto, user_id: 'user-123' };
